@@ -1,4 +1,6 @@
 const electron = require('electron')
+const { globalShortcut} = require('electron')
+
 // Module to control application life.
 const app = electron.app
 // Module to create native browser window.
@@ -37,7 +39,31 @@ function createWindow () {
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.on('ready', createWindow)
+app.on('ready', () =>
+
+{
+  
+   // Register a 'CommandOrControl+X' shortcut listener.
+  const ret = globalShortcut.register('CommandOrControl+X', () => {
+    console.log('CommandOrControl+X is pressed')
+  })
+
+  if (!ret) {
+    console.log('registration failed')
+  }
+
+  // Check whether a shortcut is registered.
+  console.log(globalShortcut.isRegistered('CommandOrControl+X'))
+  
+  createWindow()
+})
+app.on('will-quit', () => {
+  // Unregister a shortcut.
+  globalShortcut.unregister('CommandOrControl+X')
+
+  // Unregister all shortcuts.
+  globalShortcut.unregisterAll()
+})
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
