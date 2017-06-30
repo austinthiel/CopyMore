@@ -1,7 +1,7 @@
 /*jshint esversion: 6 */
 
 const electron = require('electron');
-const { globalShortcut } = require('electron');
+const { globalShortcut, ipcMain } = require('electron');
 const { clipboard } = require('electron');
 
 // Module to control application life.
@@ -24,7 +24,7 @@ function createWindow () {
   childWindow = new BrowserWindow({show: false, frame: false, width: 250, height: 300});
 
   childWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'childIndex.html'),
+    pathname: path.join(__dirname, 'copylist.html'),
     protocol: 'file:',
     slashes: true
   }));
@@ -81,7 +81,8 @@ app.on('ready', () => {
 
     // handler for when text data is copied into the clipboard
     onTextChange: function (text) {
-      console.log(text);
+    //  console.log(text);
+      childWindow.webContents.send('add-new-copy', text);
     }
   });
 
@@ -108,3 +109,8 @@ app.on('activate', function () {
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
+
+
+ipcMain.on('log', function (e) {
+  console.log(e);
+})
