@@ -13,6 +13,7 @@ const path = require('path');
 const url = require('url');
 
 const clipboardWatcher = require('electron-clipboard-watcher');
+const Positioner = require('electron-positioner');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -21,13 +22,6 @@ let mainWindow;
 function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({width: 800, height: 600});
-  childWindow = new BrowserWindow({show: false, frame: false, width: 250, height: 300});
-
-  childWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'childIndex.html'),
-    protocol: 'file:',
-    slashes: true
-  }));
 
   // and load the index.html of the app.
   mainWindow.loadURL(url.format({
@@ -47,6 +41,18 @@ function createWindow () {
     mainWindow = null;
     childWindow.close();
   });
+}
+
+function createChildWindow() {
+  childWindow = new BrowserWindow({show: false, frame: false, width: 250, height: 300});
+  const positioner = new Positioner(childWindow);
+  positioner.move('bottomRight');
+
+  childWindow.loadURL(url.format({
+    pathname: path.join(__dirname, 'childIndex.html'),
+    protocol: 'file:',
+    slashes: true
+  }));
 
   // Emitted when the window is closed.
   childWindow.on('closed', function () {
@@ -54,38 +60,15 @@ function createWindow () {
   });
 }
 
-let childIsVisible = false;
-
-function toggleChildWindow() {
-  if (childIsVisible ? childWindow.hide() : childWindow.show());
-  childIsVisible = !childIsVisible;
-}
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
-
-  globalShortcut.register('CommandOrControl+X', () => {
-    toggleChildWindow();
-  });
-
-  clipboardWatcher({
-    // (optional) delay in ms between polls
-    watchDelay: 50,
-
-    // handler for when image data is copied into the clipboard
-    onImageChange: function (nativeImage) {
-      console.log(nativeImage);
-    },
-
-    // handler for when text data is copied into the clipboard
-    onTextChange: function (text) {
-      console.log(text);
-    }
-  });
+  setHotkeys();
+  clipboardListener();
 
   createWindow();
+  createChildWindow();
 });
 
 // Quit when all windows are closed.
@@ -105,6 +88,31 @@ app.on('activate', function () {
     createWindow();
   }
 });
+
+function setHotkeys() {
+  globalShortcut.register('CommandOrControl+X', () => {
+    toggleChildWindow();
+  });
+}
+
+function clipboardListener() {
+  clipboardWatcher({
+    watchDelay: 50, //optional
+    onImageChange: function (nativeImage) {
+      console.log(nativeImage);
+    },
+    onTextChange: function (text) {
+      console.log(text);
+    }
+  });
+}
+
+let childIsVisible = false;
+
+function toggleChildWindow() {
+  if (childIsVisible ? childWindow.hide() : childWindow.show());
+  childIsVisible = !childIsVisible;
+}
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.

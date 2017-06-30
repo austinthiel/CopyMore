@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "electron-clipboard-watcher": "^1.0.1",
+    "electron-positioner": "^3.0.0",
     "hammerjs": "^2.0.8",
     "jquery": "^3.2.1",
     "materialize-css": "^0.99.0"
