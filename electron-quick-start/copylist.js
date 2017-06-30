@@ -22,10 +22,13 @@ document.addEventListener('keydown', (evt) => {
       break;
     case 13: // ENTER
       if (copyValues.length > 0) {
+        // console.log(copyValues[currSelected]);
         const selectedValue = copyValues[currSelected];
         // Removes the selected value from the array
         // it gets re-added automatically by the clipboardWatcher
-        copyValues.splice(currSelected, 1);
+        if (currSelected !== 0) {
+          copyValues.splice(currSelected, 1);
+        }
         ipc.send('set-clipboard-value', selectedValue);
         ipc.send('toggleChildWindow');
       }
@@ -61,6 +64,7 @@ function renderList() {
 
 ipc.on('add-new-copy', (event, message) => {
   copyValues.unshift(message);
+
   renderList();
   currSelected = 0;
   $('.cardlist').children().first().addClass('selected');
