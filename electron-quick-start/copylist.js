@@ -4,6 +4,7 @@ const ipc = require('electron').ipcRenderer;
 
 const copyValues = [];
 let currSelected = 0;
+
 document.addEventListener('keydown', (evt) => {
   let changeSelected = false;
   switch (evt.keyCode) {
