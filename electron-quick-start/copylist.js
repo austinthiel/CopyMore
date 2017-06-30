@@ -37,18 +37,18 @@ document.addEventListener('keydown', (evt) => {
   }
 
   if (changeSelected) {
-    $('.selected').each(function () { // unnamed function breaks functionality
+    $('.selected').each(function each() { // unnamed function breaks functionality
       $(this).removeClass('selected');
     });
-    $('#card' + currSelected).addClass('selected');
+    $(`#card${currSelected}`).addClass('selected');
   }
 });
 
 function cardTemplate(id, title, text) {
-  return `<div id="card` + id + `" class="card">
+  return `<div id="card${id}" class="card">
             <div class="card-content">
-              <span class="card-title">` + title + `</span>
-              <p id="value"><pre>` + text.replace(/&/g, '&amp;').replace(/</g, '&lt;') + `</pre></p>
+              <span class="card-title">${title}</span>
+              <p id="value"><pre>${text.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</pre></p>
             </div>
           </div>`;
 }
