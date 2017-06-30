@@ -108,14 +108,25 @@ function clipboardListener() {
   });
 }
 
-ipcMain.on('log', function (e) {
-  console.log(e);
+ipcMain.on('log', function (e, message) {
+  console.log(message);
 });
+ipcMain.on('set-clipboard-value', function(e, val){
+  clipboard.writeText(val);
+});
+ipcMain.on('toggleChildWindow', function(){
+  toggleChildWindow();
+})
 
 let childIsVisible = false;
 
 function toggleChildWindow() {
-  if (childIsVisible ? childWindow.hide() : childWindow.show());
+  if (childIsVisible){
+    childWindow.hide()
+  }else{
+    childWindow.show();
+    childWindow.focus();
+  }
   childIsVisible = !childIsVisible;
 }
 
