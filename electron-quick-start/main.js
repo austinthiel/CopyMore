@@ -1,5 +1,3 @@
-/* jshint esversion: 6 */
-
 const electron = require('electron');
 const { globalShortcut, ipcMain } = require('electron');
 const { clipboard } = require('electron');
