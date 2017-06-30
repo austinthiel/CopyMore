@@ -1,7 +1,7 @@
 /*jshint esversion: 6 */
 
 const electron = require('electron');
-const { globalShortcut } = require('electron');
+const { globalShortcut, ipcMain } = require('electron');
 const { clipboard } = require('electron');
 
 // Module to control application life.
@@ -49,7 +49,7 @@ function createChildWindow() {
   positioner.move('bottomRight');
 
   childWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'childIndex.html'),
+    pathname: path.join(__dirname, 'copylist.html'),
     protocol: 'file:',
     slashes: true
   }));
@@ -102,10 +102,15 @@ function clipboardListener() {
       console.log(nativeImage);
     },
     onTextChange: function (text) {
-      console.log(text);
+      //console.log(text);
+      childWindow.webContents.send('add-new-copy', text);
     }
   });
 }
+
+ipcMain.on('log', function (e) {
+  console.log(e);
+});
 
 let childIsVisible = false;
 
