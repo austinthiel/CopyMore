@@ -1,4 +1,4 @@
-/*jshint esversion: 6 */
+/* jshint esversion: 6 */
 
 const electron = require('electron');
 const { globalShortcut, ipcMain } = require('electron');
@@ -18,23 +18,26 @@ const Positioner = require('electron-positioner');
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
+let childWindow;
 
-function createWindow () {
+function createWindow() {
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 800, height: 600});
+  mainWindow = new BrowserWindow({
+    width: 800, height: 600,
+  });
 
   // and load the index.html of the app.
   mainWindow.loadURL(url.format({
     pathname: path.join(__dirname, 'index.html'),
     protocol: 'file:',
-    slashes: true
+    slashes: true,
   }));
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
 
   // Emitted when the window is closed.
-  mainWindow.on('closed', function () {
+  mainWindow.on('closed', () => {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
@@ -44,21 +47,64 @@ function createWindow () {
 }
 
 function createChildWindow() {
-  childWindow = new BrowserWindow({show: false, frame: false, width: 250, height: 300});
+  childWindow = new BrowserWindow({
+    show: false, frame: false, width: 400, height: 300,
+  });
   const positioner = new Positioner(childWindow);
   positioner.move('bottomRight');
 
   childWindow.loadURL(url.format({
     pathname: path.join(__dirname, 'copylist.html'),
     protocol: 'file:',
-    slashes: true
+    slashes: true,
   }));
 
   // Emitted when the window is closed.
-  childWindow.on('closed', function () {
+  childWindow.on('closed', () => {
     childWindow = null;
   });
 }
+
+let childIsVisible = false;
+
+function toggleChildWindow() {
+  if (childIsVisible) {
+    childWindow.hide();
+  } else {
+    childWindow.show();
+    childWindow.focus();
+  }
+  childIsVisible = !childIsVisible;
+}
+
+function setHotkeys() {
+  globalShortcut.register('CommandOrControl+X', () => {
+    toggleChildWindow();
+  });
+}
+
+function clipboardListener() {
+  clipboardWatcher({
+    watchDelay: 50, // optional
+    onImageChange: (nativeImage) => {
+      console.log(nativeImage);
+    },
+    onTextChange: (text) => {
+      // console.log(text);
+      childWindow.webContents.send('add-new-copy', text);
+    },
+  });
+}
+
+ipcMain.on('log', (e, message) => {
+  console.log(message);
+});
+ipcMain.on('set-clipboard-value', (e, val) => {
+  clipboard.writeText(val);
+});
+ipcMain.on('toggleChildWindow', () => {
+  toggleChildWindow();
+});
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
@@ -72,7 +118,7 @@ app.on('ready', () => {
 });
 
 // Quit when all windows are closed.
-app.on('window-all-closed', function () {
+app.on('window-all-closed', () => {
   // On OS X it is common for applications and their menu bar
   // to stay active until the user quits explicitly with Cmd + Q
   if (process.platform !== 'darwin') {
@@ -81,54 +127,13 @@ app.on('window-all-closed', function () {
   }
 });
 
-app.on('activate', function () {
+app.on('activate', () => {
   // On OS X it's common to re-create a window in the app when the
   // dock icon is clicked and there are no other windows open.
   if (mainWindow === null) {
     createWindow();
   }
 });
-
-function setHotkeys() {
-  globalShortcut.register('CommandOrControl+X', () => {
-    toggleChildWindow();
-  });
-}
-
-function clipboardListener() {
-  clipboardWatcher({
-    watchDelay: 50, //optional
-    onImageChange: function (nativeImage) {
-      console.log(nativeImage);
-    },
-    onTextChange: function (text) {
-      //console.log(text);
-      childWindow.webContents.send('add-new-copy', text);
-    }
-  });
-}
-
-ipcMain.on('log', function (e, message) {
-  console.log(message);
-});
-ipcMain.on('set-clipboard-value', function(e, val){
-  clipboard.writeText(val);
-});
-ipcMain.on('toggleChildWindow', function(){
-  toggleChildWindow();
-})
-
-let childIsVisible = false;
-
-function toggleChildWindow() {
-  if (childIsVisible){
-    childWindow.hide()
-  }else{
-    childWindow.show();
-    childWindow.focus();
-  }
-  childIsVisible = !childIsVisible;
-}
 
 // In this file you can include the rest of your app's specific main process
 // code. You can also put them in separate files and require them here.
