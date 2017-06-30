@@ -24,7 +24,10 @@ document.addEventListener('keydown', function (evt) {
         break;
       case 13:
         if(copyValues.length > 0){
-          ipc.send('set-clipboard-value', copyValues[currSelected]);
+          let selectedValue = copyValues[currSelected];
+        
+          copyValues.splice(currSelected, 1);//Removes the selected value from the array, it gets re-added automatically by the clipboardWatcher
+          ipc.send('set-clipboard-value', selectedValue);
           ipc.send('toggleChildWindow');
         }  
     }
