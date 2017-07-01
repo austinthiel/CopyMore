@@ -3,6 +3,7 @@ const { globalShortcut, ipcMain } = require('electron');
 const { clipboard } = require('electron');
 const ref = require('ref');
 const ffi = require('ffi');
+const { Tray, Menu } = require('electron');
 
 const Struct = require('ref-struct');
 
@@ -29,7 +30,6 @@ const user32 = new ffi.Library('user32', {
   SetFocus: ['long', ['long']],
 });
 
-
 let foregroundHWnd;
 let openAtCursor = false;
 
@@ -50,10 +50,29 @@ let mainWindow;
 let childWindow;
 let positioner;
 
+let tray = null;
+
+function hideToTray() {
+  tray = new Tray('./build/background.png');
+  const contextMenu = Menu.buildFromTemplate([
+    { label: 'Item1', type: 'radio' },
+    { label: 'Item2', type: 'radio' },
+    { label: 'Item3', type: 'radio', checked: true },
+    { label: 'Item4', type: 'radio' },
+  ]);
+  tray.setToolTip('This is my application.');
+  tray.setContextMenu(contextMenu);
+
+  tray.on('click', () => {
+    mainWindow.show();
+    tray.destroy();
+  });
+}
+
 function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 800, height: 600,
+    width: 800, height: 600, title: 'TEST', icon: './build/background.png',
   });
 
   // and load the index.html of the app.
@@ -62,6 +81,10 @@ function createWindow() {
     protocol: 'file:',
     slashes: true,
   }));
+
+  mainWindow.on('minimize', () => {
+    hideToTray();
+  });
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
@@ -75,6 +98,7 @@ function createWindow() {
     childWindow.close();
   });
 }
+
 
 function createChildWindow() {
   childWindow = new BrowserWindow({
@@ -99,11 +123,11 @@ let childIsVisible = false;
 
 function toggleChildWindow() {
   if (childIsVisible) {
-    childWindow.hide();
     user32.SetForegroundWindow(foregroundHWnd);
     user32.ShowWindow(foregroundHWnd, 5);
     user32.SetFocus(foregroundHWnd);
     user32.SetActiveWindow(foregroundHWnd);
+    childWindow.hide();
   } else {
     if (openAtCursor) {
       const mousePosition = new MousePoint();
@@ -114,7 +138,6 @@ function toggleChildWindow() {
     } else {
       positioner.move('bottomRight');
     }
-
 
     childWindow.show();
     childWindow.focus();
@@ -155,7 +178,10 @@ ipcMain.on('setting-change-openAtCursor', (e, val) => {
   console.log(`Changed Setting openAtCursor to ${val}`);
   openAtCursor = val;
 });
-
+ipcMain.on('hide-to-tray-btn', () => {
+  console.log('hiding to tray via button');
+  mainWindow.minimize();
+});
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
