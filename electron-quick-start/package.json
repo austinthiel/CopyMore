@@ -20,6 +20,7 @@
   "author": "GitHub",
   "license": "CC0-1.0",
   "devDependencies": {
+    "electron": "~1.6.2",
     "electron-builder": "^19.8.0",
     "electron-rebuild": "^1.5.11",
     "eslint": "^3.19.0",
@@ -27,7 +28,6 @@
     "eslint-plugin-import": "^2.2.0"
   },
   "dependencies": {
-    "electron": "~1.6.2",
     "electron-clipboard-watcher": "^1.0.1",
     "electron-positioner": "^3.0.0",
     "ffi": "^2.2.0",

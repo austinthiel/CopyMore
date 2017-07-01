@@ -8,5 +8,8 @@
     },
     "rules": {
       "linebreak-style": ["error", "windows"]
+    },
+    "settings": {
+      "import/core-modules": [ "electron" ]
     }
 }
