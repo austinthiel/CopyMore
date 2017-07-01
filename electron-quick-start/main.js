@@ -1,6 +1,37 @@
 const electron = require('electron');
 const { globalShortcut, ipcMain } = require('electron');
 const { clipboard } = require('electron');
+const ref = require('ref');
+const ffi = require('ffi');
+
+const Struct = require('ref-struct');
+
+const MousePoint = Struct({
+  x: 'long',
+  y: 'long',
+});
+
+const MousePointPtr = ref.refType(MousePoint);
+
+const user32 = new ffi.Library('user32', {
+  GetCursorPos: ['long', [MousePointPtr, 'pointer']],
+  GetTopWindow: ['long', ['long']],
+  FindWindowA: ['long', ['string', 'string']],
+  SetActiveWindow: ['long', ['long']],
+  SetForegroundWindow: ['bool', ['long']],
+  BringWindowToTop: ['bool', ['long']],
+  ShowWindow: ['bool', ['long', 'int']],
+  SwitchToThisWindow: ['void', ['long', 'bool']],
+  GetForegroundWindow: ['long', []],
+  AttachThreadInput: ['bool', ['int', 'long', 'bool']],
+  GetWindowThreadProcessId: ['int', ['long', 'int']],
+  SetWindowPos: ['bool', ['long', 'long', 'int', 'int', 'int', 'int', 'uint']],
+  SetFocus: ['long', ['long']],
+});
+
+
+let foregroundHWnd;
+let openAtCursor = false;
 
 // Module to control application life.
 const app = electron.app;
@@ -17,6 +48,7 @@ const Positioner = require('electron-positioner');
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 let childWindow;
+let positioner;
 
 function createWindow() {
   // Create the browser window.
@@ -48,7 +80,7 @@ function createChildWindow() {
   childWindow = new BrowserWindow({
     show: false, frame: false, width: 400, height: 300,
   });
-  const positioner = new Positioner(childWindow);
+  positioner = new Positioner(childWindow);
   positioner.move('bottomRight');
 
   childWindow.loadURL(url.format({
@@ -68,7 +100,22 @@ let childIsVisible = false;
 function toggleChildWindow() {
   if (childIsVisible) {
     childWindow.hide();
+    user32.SetForegroundWindow(foregroundHWnd);
+    user32.ShowWindow(foregroundHWnd, 5);
+    user32.SetFocus(foregroundHWnd);
+    user32.SetActiveWindow(foregroundHWnd);
   } else {
+    if (openAtCursor) {
+      const mousePosition = new MousePoint();
+      // Call user32 function GetCursorPos and Pass our MousePoint struct reference to it.
+      user32.GetCursorPos(mousePosition.ref(), null);
+      console.log(`X: ${mousePosition.x}, Y: ${mousePosition.y}`);
+      childWindow.setPosition(mousePosition.x, mousePosition.y);
+    } else {
+      positioner.move('bottomRight');
+    }
+
+
     childWindow.show();
     childWindow.focus();
   }
@@ -77,6 +124,7 @@ function toggleChildWindow() {
 
 function setHotkeys() {
   globalShortcut.register('CommandOrControl+X', () => {
+    foregroundHWnd = user32.GetForegroundWindow();
     toggleChildWindow();
   });
 }
@@ -103,6 +151,11 @@ ipcMain.on('set-clipboard-value', (e, val) => {
 ipcMain.on('toggleChildWindow', () => {
   toggleChildWindow();
 });
+ipcMain.on('setting-change-openAtCursor', (e, val) => {
+  console.log(`Changed Setting openAtCursor to ${val}`);
+  openAtCursor = val;
+});
+
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

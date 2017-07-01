@@ -14,7 +14,7 @@ document.addEventListener('keydown', (evt) => {
       ipc.send('log', currSelected);
       break;
     case 40: // DOWN
-      if (copyValues.length > 0 && currSelected < copyValues.length) {
+      if (copyValues.length > 0 && currSelected < copyValues.length - 1) {
         changeSelected = true;
         currSelected += 1;
       }
