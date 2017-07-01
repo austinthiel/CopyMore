@@ -38,34 +38,33 @@ document.addEventListener('keydown', (evt) => {
   }
 
   if (changeSelected) {
-    $('.selected').each(function each() { // unnamed function breaks functionality
-      $(this).removeClass('selected');
+    $('.darken-2').each(function each() { // unnamed function breaks functionality
+      $(this).removeClass('darken-2');
     });
-    $(`#card${currSelected}`).addClass('selected');
+    $(`#card${currSelected}`).addClass('darken-2');
   }
 });
 
 function cardTemplate(id, title, text) {
-  return `<div id="card${id}" class="card">
-            <div class="card-content">
-              <span class="card-title">${title}</span>
-              <p id="value"><pre>${text.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</pre></p>
-            </div>
+  return `<div id="card${id}" class="card-panel blue-grey">
+            <span class="white-text">
+              ${text.replace(/&/g, '&amp;').replace(/</g, '&lt;')}
+            </span>
           </div>`;
 }
 
 function renderList() {
+  currSelected = 0;
   const cardlist = $('.cardlist');
   cardlist.html('');
   for (let i = 0; i < copyValues.length; i += 1) {
     cardlist.append(cardTemplate(i, i + 1, copyValues[i]));
   }
+  $('.cardlist').children().first().addClass('darken-2');
 }
 
 ipc.on('add-new-copy', (event, message) => {
   copyValues.unshift(message);
 
   renderList();
-  currSelected = 0;
-  $('.cardlist').children().first().addClass('selected');
 });

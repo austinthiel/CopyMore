@@ -48,7 +48,7 @@ function hideToTray() {
 function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 800, height: 600, title: 'TEST', icon: './build/background.png',
+    width: 350, height: 400, title: 'TEST', icon: './build/background.png',
   });
 
   // and load the index.html of the app.
@@ -70,7 +70,13 @@ function createWindow() {
 
 function createChildWindow() {
   childWindow = new BrowserWindow({
-    show: false, frame: false, width: 400, height: 300,
+    show: false,
+    frame: false,
+    width: 400,
+    height: 300,
+    webPreferences: {
+      backgroundThrottling: false,
+    },
   });
   positioner = new Positioner(childWindow);
   positioner.move('bottomRight');
@@ -114,7 +120,7 @@ function setHotkeys() {
 
 function clipboardListener() {
   clipboardWatcher({
-    watchDelay: 50, // optional
+    watchDelay: 20, // optional
     onImageChange: (nativeImage) => {
       console.log(nativeImage);
     },
