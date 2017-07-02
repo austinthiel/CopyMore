@@ -1,4 +1,8 @@
+const electron = require('electron');
 const ipc = require('electron').ipcRenderer;
+
+const currentWindow = electron.remote.getCurrentWindow();
+const settings = currentWindow.settings;
 
 const copyValues = [];
 let currSelected = 0;
@@ -31,6 +35,9 @@ document.addEventListener('keydown', (evt) => {
         }
         ipc.send('set-clipboard-value', selectedValue);
         ipc.send('toggleChildWindow');
+        if (settings.autoPasteOnSelection) {
+          // Send Keystrokes... requires win32 hooks... Will do later
+        }
       }
       break;
     default:
@@ -68,6 +75,10 @@ function renderList() {
   }
   $('.cardlist').children().first().addClass('darken-2');
 }
+
+ipc.on('settings-change', (event, key, data) => {
+  settings[key] = data;
+});
 
 ipc.on('add-new-copy', (event, message) => {
   copyValues.unshift(message);

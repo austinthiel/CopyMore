@@ -3,11 +3,11 @@ const { globalShortcut, ipcMain } = require('electron');
 const { clipboard } = require('electron');
 const { Tray, Menu } = require('electron');
 const User32Module = require('./lib/user32');
+const SettingsModule = require('./lib/settings');
 
 const user32 = new User32Module();
 
 let foregroundHWnd;
-let openAtCursor = false;
 
 // Module to control application life.
 const app = electron.app;
@@ -25,7 +25,17 @@ const Positioner = require('electron-positioner');
 let mainWindow;
 let childWindow;
 let positioner;
+let settings;
 
+const settingsAccessor = new SettingsModule({
+  onSettingChange: (key, value) => {
+    childWindow.webContents.send('setting-changed', key, value);
+    mainWindow.webContents.send('setting-changed', key, value);
+    settings[key] = value;
+  },
+});
+
+settings = settingsAccessor.loadAllSettings();
 let tray = null;
 
 function hideToTray() {
@@ -58,6 +68,8 @@ function createWindow() {
     slashes: true,
   }));
 
+  mainWindow.settings = settings;
+
   mainWindow.on('minimize', () => {
     hideToTray();
   });
@@ -87,6 +99,8 @@ function createChildWindow() {
     slashes: true,
   }));
 
+  childWindow.settings = settings;
+
   childWindow.on('closed', () => {
     childWindow = null;
   });
@@ -100,7 +114,7 @@ function toggleChildWindow() {
     console.log('hiding window...');
     childWindow.hide();
   } else {
-    if (openAtCursor) {
+    if (settings.openAtCursorPosition) {
       const mouse = user32.GetCursorCoordinates();
       childWindow.setPosition(mouse.x, mouse.y);
     } else {
@@ -157,7 +171,7 @@ ipcMain.on('toggleChildWindow', () => {
 });
 
 ipcMain.on('setting-change-openAtCursor', (e, val) => {
-  openAtCursor = val;
+  settingsAccessor.setByKey('openAtCursorPosition', val);
 });
 
 ipcMain.on('hide-to-tray-btn', () => {
