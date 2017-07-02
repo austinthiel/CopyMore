@@ -1,5 +1,6 @@
 const electron = require('electron');
 const ipc = require('electron').ipcRenderer;
+const robot = require('robotjs');
 
 const currentWindow = electron.remote.getCurrentWindow();
 const settings = currentWindow.settings;
@@ -35,8 +36,8 @@ document.addEventListener('keydown', (evt) => {
         }
         ipc.send('set-clipboard-value', selectedValue);
         ipc.send('toggleChildWindow');
-        if (settings.autoPasteOnSelection) {
-          // Send Keystrokes... requires win32 hooks... Will do later
+        if (settings.autoPasteOnSelection && typeof selectedValue === 'string') {
+          robot.typeString(selectedValue);
         }
       }
       break;

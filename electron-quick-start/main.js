@@ -174,6 +174,11 @@ ipcMain.on('setting-change-openAtCursor', (e, val) => {
   settingsAccessor.setByKey('openAtCursorPosition', val);
 });
 
+ipcMain.on('setting-change-autoPasteOnSelection', (e, val) => {
+  settingsAccessor.setByKey('autoPasteOnSelection', val);
+});
+
+
 ipcMain.on('hide-to-tray-btn', () => {
   mainWindow.minimize();
 });
