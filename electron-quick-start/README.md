@@ -7,8 +7,11 @@ This is an electron app that stores every clipboard cut/copy you make and makes 
 ## To Use
 
 `git clone https://github.com/austinthiel/CopyMore.git`
+
 `cd CopyMore`
+
 `npm i`
+
 `npm start`
 
 The hotkey to open the Copy List is `F8`.
