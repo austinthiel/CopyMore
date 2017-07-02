@@ -10,6 +10,6 @@
       "linebreak-style": ["error", "windows"]
     },
     "settings": {
-      "import/core-modules": [ "electron" ]
+      "import/core-modules": [ "electron", "robotjs" ]
     }
 }

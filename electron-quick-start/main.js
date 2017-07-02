@@ -26,6 +26,7 @@ let mainWindow;
 let childWindow;
 let positioner;
 let settings;
+let screen = null;
 
 const settingsAccessor = new SettingsModule({
   onSettingChange: (key, value) => {
@@ -38,7 +39,7 @@ const settingsAccessor = new SettingsModule({
 settings = settingsAccessor.loadAllSettings();
 let tray = null;
 
-function hideToTray() {
+function createTray() {
   tray = new Tray('./build/background.png');
   const contextMenu = Menu.buildFromTemplate([
     { label: 'Item1', type: 'radio' },
@@ -51,7 +52,6 @@ function hideToTray() {
 
   tray.on('click', () => {
     mainWindow.show();
-    tray.destroy();
   });
 }
 
@@ -69,10 +69,6 @@ function createWindow() {
   }));
 
   mainWindow.settings = settings;
-
-  mainWindow.on('minimize', () => {
-    hideToTray();
-  });
 
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -111,11 +107,10 @@ let childIsVisible = false;
 function toggleChildWindow() {
   if (childIsVisible) {
     user32.ReturnAllFocusToWindow(foregroundHWnd);
-    console.log('hiding window...');
     childWindow.hide();
   } else {
     if (settings.openAtCursorPosition) {
-      const mouse = user32.GetCursorCoordinates();
+      const mouse = screen.getCursorScreenPoint();
       childWindow.setPosition(mouse.x, mouse.y);
     } else {
       positioner.move('bottomRight');
@@ -128,7 +123,7 @@ function toggleChildWindow() {
 }
 
 function setHotkeys() {
-  globalShortcut.register('Alt+x', () => {
+  globalShortcut.register('F8', () => {
     foregroundHWnd = user32.GetForegroundWindow();
     toggleChildWindow();
   });
@@ -178,7 +173,6 @@ ipcMain.on('setting-change-autoPasteOnSelection', (e, val) => {
   settingsAccessor.setByKey('autoPasteOnSelection', val);
 });
 
-
 ipcMain.on('hide-to-tray-btn', () => {
   mainWindow.minimize();
 });
@@ -186,13 +180,14 @@ ipcMain.on('hide-to-tray-btn', () => {
 /*
 App Events
 */
-
 app.on('ready', () => {
+  screen = electron.screen;
   setHotkeys();
   clipboardListener();
 
   createWindow();
   createChildWindow();
+  createTray();
 });
 
 app.on('window-all-closed', () => {
