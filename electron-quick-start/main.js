@@ -17,7 +17,7 @@ const BrowserWindow = electron.BrowserWindow;
 const path = require('path');
 const url = require('url');
 
-const clipboardWatcher = require('electron-clipboard-watcher');
+const clipboardWatcher = require('./lib/electron-clipboard-watcher');
 const Positioner = require('electron-positioner');
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -97,6 +97,7 @@ let childIsVisible = false;
 function toggleChildWindow() {
   if (childIsVisible) {
     user32.ReturnAllFocusToWindow(foregroundHWnd);
+    console.log('hiding window...');
     childWindow.hide();
   } else {
     if (openAtCursor) {
@@ -105,6 +106,7 @@ function toggleChildWindow() {
     } else {
       positioner.move('bottomRight');
     }
+    childWindow.webContents.send('render');
     childWindow.show();
     childWindow.focus();
   }
@@ -112,7 +114,7 @@ function toggleChildWindow() {
 }
 
 function setHotkeys() {
-  globalShortcut.register('CommandOrControl+X', () => {
+  globalShortcut.register('Alt+x', () => {
     foregroundHWnd = user32.GetForegroundWindow();
     toggleChildWindow();
   });
@@ -120,33 +122,51 @@ function setHotkeys() {
 
 function clipboardListener() {
   clipboardWatcher({
-    watchDelay: 20, // optional
+    watchDelay: 20,
+    callOnlyAny: true,
     onImageChange: (nativeImage) => {
-      console.log(nativeImage);
+      childWindow.webContents.send('add-new-copy', nativeImage);
     },
     onTextChange: (text) => {
       childWindow.webContents.send('add-new-copy', text);
     },
+    onAnyChange: (val) => {
+      childWindow.webContents.send('add-new-copy', val);
+    },
   });
 }
+
+/*
+IPC Callbacks
+*/
 
 ipcMain.on('log', (e, message) => {
   console.log(message);
 });
+
 ipcMain.on('set-clipboard-value', (e, val) => {
-  clipboard.writeText(val);
+  if (typeof val === 'string') {
+    clipboard.writeText(val);
+  } else {
+    clipboard.writeImage(val);
+  }
 });
+
 ipcMain.on('toggleChildWindow', () => {
   toggleChildWindow();
 });
+
 ipcMain.on('setting-change-openAtCursor', (e, val) => {
-  console.log(`Changed Setting openAtCursor to ${val}`);
   openAtCursor = val;
 });
+
 ipcMain.on('hide-to-tray-btn', () => {
-  console.log('hiding to tray via button');
   mainWindow.minimize();
 });
+
+/*
+App Events
+*/
 
 app.on('ready', () => {
   setHotkeys();

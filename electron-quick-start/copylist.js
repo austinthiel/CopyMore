@@ -47,7 +47,7 @@ document.addEventListener('keydown', (evt) => {
 
 function cardTemplate(id, title, text) {
   return `<div id="card${id}" class="card-panel blue-grey">
-            <span class="white-text">
+            <span class="white-text truncate">
               ${text.replace(/&/g, '&amp;').replace(/</g, '&lt;')}
             </span>
           </div>`;
@@ -57,14 +57,23 @@ function renderList() {
   currSelected = 0;
   const cardlist = $('.cardlist');
   cardlist.html('');
+  let displayValue;
   for (let i = 0; i < copyValues.length; i += 1) {
-    cardlist.append(cardTemplate(i, i + 1, copyValues[i]));
+    if (typeof copyValues[i] === 'string') {
+      displayValue = copyValues[i];
+    } else {
+      displayValue = 'Image';
+    }
+    cardlist.append(cardTemplate(i, i + 1, displayValue));
   }
   $('.cardlist').children().first().addClass('darken-2');
 }
 
 ipc.on('add-new-copy', (event, message) => {
   copyValues.unshift(message);
+  renderList();
+});
 
+ipc.on('render', () => {
   renderList();
 });
