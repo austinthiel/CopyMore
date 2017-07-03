@@ -16,18 +16,15 @@ document.addEventListener('keydown', (evt) => {
         changeSelected = true;
         currSelected -= 1;
       }
-      ipc.send('log', currSelected);
       break;
     case 40: // DOWN
       if (copyValues.length > 0 && currSelected < copyValues.length - 1) {
         changeSelected = true;
         currSelected += 1;
       }
-      ipc.send('log', currSelected);
       break;
     case 13: // ENTER
       if (copyValues.length > 0) {
-        // console.log(copyValues[currSelected]);
         const selectedValue = copyValues[currSelected];
         // Removes the selected value from the array
         // it gets re-added automatically by the clipboardWatcher
