@@ -1,12 +1,14 @@
 const electron = require('electron');
 const ipc = require('electron').ipcRenderer;
-const robot = require('robotjs');
+const RobotModule = require('./lib/robot');
 
 const currentWindow = electron.remote.getCurrentWindow();
 const settings = currentWindow.settings;
 
 const copyValues = [];
 let currSelected = 0;
+
+const robot = new RobotModule();
 
 document.addEventListener('keydown', (evt) => {
   let changeSelected = false;
@@ -34,7 +36,7 @@ document.addEventListener('keydown', (evt) => {
         ipc.send('set-clipboard-value', selectedValue);
         ipc.send('toggleChildWindow');
         if (settings.autoPasteOnSelection && typeof selectedValue === 'string') {
-          robot.typeString(selectedValue);
+          robot.paste();
         }
       }
       break;

@@ -20,6 +20,8 @@ const url = require('url');
 const clipboardWatcher = require('./lib/electron-clipboard-watcher');
 const Positioner = require('electron-positioner');
 
+const STATIC_PATH = path.join(__dirname, 'static');
+
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
@@ -63,7 +65,7 @@ function createWindow() {
 
   // and load the index.html of the app.
   mainWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'index.html'),
+    pathname: path.join(STATIC_PATH, 'index.html'),
     protocol: 'file:',
     slashes: true,
   }));
@@ -90,7 +92,7 @@ function createChildWindow() {
   positioner.move('bottomRight');
 
   childWindow.loadURL(url.format({
-    pathname: path.join(__dirname, 'copylist.html'),
+    pathname: path.join(STATIC_PATH, 'copylist.html'),
     protocol: 'file:',
     slashes: true,
   }));
