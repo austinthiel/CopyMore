@@ -113,7 +113,18 @@ function toggleChildWindow() {
   } else {
     if (settings.openAtCursorPosition) {
       const mouse = screen.getCursorScreenPoint();
-      childWindow.setPosition(mouse.x, mouse.y);
+      const currScreenSize = screen.getDisplayNearestPoint(mouse).size;
+      const childWindowWidth = childWindow.getSize()[0];
+      const childWindowHeight = childWindow.getSize()[1];
+      let xVal = mouse.x;
+      let yVal = mouse.y;
+      if (mouse.x > currScreenSize.width - childWindowWidth) {
+        xVal = currScreenSize.width - childWindowWidth;
+      }
+      if (mouse.y > currScreenSize.height - childWindowHeight) {
+        yVal = currScreenSize.height - childWindowHeight;
+      }
+      childWindow.setPosition(xVal, yVal);
     } else {
       positioner.move('bottomRight');
     }
