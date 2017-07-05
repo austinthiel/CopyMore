@@ -113,7 +113,7 @@ function toggleChildWindow() {
   } else {
     if (settings.openAtCursorPosition) {
       const mouse = screen.getCursorScreenPoint();
-      const currScreenSize = screen.getDisplayNearestPoint(mouse).size;
+      const currScreenSize = screen.getDisplayNearestPoint(mouse).workArea;
       const childWindowWidth = childWindow.getSize()[0];
       const childWindowHeight = childWindow.getSize()[1];
       let xVal = mouse.x;
