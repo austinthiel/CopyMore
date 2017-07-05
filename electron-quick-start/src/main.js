@@ -1,9 +1,7 @@
 const electron = require('electron');
-const { globalShortcut, ipcMain } = require('electron');
-const { clipboard } = require('electron');
-const { Tray, Menu } = require('electron');
-const User32Module = require('./lib/user32');
-const SettingsModule = require('./lib/settings');
+const { Tray, Menu, clipboard, globalShortcut, ipcMain } = require('electron');
+const User32Module = require('../lib/user32');
+const SettingsModule = require('../lib/settings');
 
 const user32 = new User32Module();
 
@@ -17,10 +15,10 @@ const BrowserWindow = electron.BrowserWindow;
 const path = require('path');
 const url = require('url');
 
-const clipboardWatcher = require('./lib/electron-clipboard-watcher');
+const clipboardWatcher = require('../lib/electron-clipboard-watcher');
 const Positioner = require('electron-positioner');
 
-const STATIC_PATH = path.join(__dirname, 'static');
+const STATIC_PATH = path.join(__dirname, '../static');
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -60,7 +58,7 @@ function createTray() {
 function createWindow() {
   // Create the browser window.
   mainWindow = new BrowserWindow({
-    width: 350, height: 400, title: 'TEST', icon: './build/background.png',
+    width: 350, height: 400, icon: '../build/background.png',
   });
 
   // and load the index.html of the app.
@@ -113,7 +111,18 @@ function toggleChildWindow() {
   } else {
     if (settings.openAtCursorPosition) {
       const mouse = screen.getCursorScreenPoint();
-      childWindow.setPosition(mouse.x, mouse.y);
+      const currScreenSize = screen.getDisplayNearestPoint(mouse).workArea;
+      const childWindowWidth = childWindow.getSize()[0];
+      const childWindowHeight = childWindow.getSize()[1];
+      let xVal = mouse.x;
+      let yVal = mouse.y;
+      if (mouse.x > currScreenSize.width - childWindowWidth) {
+        xVal = currScreenSize.width - childWindowWidth;
+      }
+      if (mouse.y > currScreenSize.height - childWindowHeight) {
+        yVal = currScreenSize.height - childWindowHeight;
+      }
+      childWindow.setPosition(xVal, yVal);
     } else {
       positioner.move('bottomRight');
     }
@@ -195,6 +204,7 @@ app.on('ready', () => {
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') { // OSX windows close to dock, not quit
     globalShortcut.unregisterAll();
+    tray.destroy();
     app.quit();
   }
 });

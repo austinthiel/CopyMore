@@ -1,6 +1,6 @@
 const electron = require('electron');
 const ipc = require('electron').ipcRenderer;
-const RobotModule = require('./lib/robot');
+const RobotModule = require('../lib/robot');
 
 const currentWindow = electron.remote.getCurrentWindow();
 const settings = currentWindow.settings;
